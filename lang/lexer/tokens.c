@@ -33,7 +33,7 @@ void Token_print(const struct Token *token) {
   );
 }
 
-struct Token newToken(enum TokenKind kind, char* val, int pos, int len) {
+struct Token newToken(enum TokenKind kind, char *val, int pos, int len) {
   struct Token res;
 
   res.kind = kind;

@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include "./tokens.c"
 
 
@@ -15,21 +16,23 @@ struct Lexer {
 struct Token Lexer_lex(struct Lexer *lex) {
   lex->next(lex);
 
-  if (strchr("0123456789", lex->current) != NULL) {
-    char *buff = "" + lex->current;
-    const int pos = lex->counter - 1;
-    int len = 1;
+  char buff[255] = { lex->current, '\0' };
+  const int pos = lex->counter - 1;
+  int len = 1;
 
+  if (strchr("0123456789", lex->current) != NULL)
+  {
     while (strchr("0123456789.", *lex->next(lex)) != NULL) {
-      buff += lex->current;
+      buff[len] = lex->current;
+      buff[len + 1] = '\0';
       len++;
     }
 
     return newToken(NumTk, buff, pos, len);
   }
 
-  printf("Illegal character '%c'", lex->current);
-  return newToken(ErrTk, "" + lex->current, lex->counter - 1, 1);
+  printf("Illegal character '%c'\n", lex->current);
+  return newToken(ErrTk, buff, pos, len);
 }
 
 char *Lexer_next(struct Lexer *lex) {
@@ -50,6 +53,7 @@ char *Lexer_next(struct Lexer *lex) {
 struct Lexer newLexer(const char *text) {
   struct Lexer res;
 
+  res.text = (char*) malloc(255);
   strcpy(res.text, text);
   res.counter = 0;
   res.current = ' ';

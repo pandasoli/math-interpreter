@@ -16,6 +16,9 @@ struct Lexer {
 struct Token Lexer_lex(struct Lexer *lex) {
   lex->next(lex);
 
+  if (lex->current == ' ')
+    return lex->lex(lex);
+
   char buff[255] = { lex->current, '\0' };
   const int pos = lex->counter - 1;
   int len = 1;

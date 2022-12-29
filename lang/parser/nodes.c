@@ -68,16 +68,10 @@ struct Node *Node_make_ref(const struct Node *node) {
   res->len = node->len;
   res->print = node->print;
   res->make_ref = node->make_ref;
-
-  switch (node->kind) {
-    case 'u':
-      res->right = node->right;
-      break;
-    case 'b':
-      res->left = node->left;
-      res->right = node->right;
-      break;
-  }
+  res->right = node->right;
+  res->left = node->left;
+  res->op = node->op;
+  res->val = node->val;
 
   return res;
 }
@@ -91,12 +85,18 @@ struct Node newNode(char kind, int pos, int len) {
   res.print = &Node_print;
   res.make_ref = &Node_make_ref;
 
+  res.left = malloc(0);
+  res.op = (struct Token) {};
+  res.right = malloc(0);
+
   switch (kind) {
     case 'u':
+      res.op = (struct Token) {};
       res.right = (struct Node *) malloc(sizeof(struct Node));
       break;
     case 'b':
       res.left = (struct Node *) malloc(sizeof(struct Node));
+      res.op = (struct Token) {};
       res.right = (struct Node *) malloc(sizeof(struct Node));
       break;
   }

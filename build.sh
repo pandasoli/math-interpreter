@@ -1,1 +1,1 @@
-gcc main.c -o build/main
+gcc -g main.c -o build/main

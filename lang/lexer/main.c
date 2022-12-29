@@ -2,14 +2,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "./tokens.c"
+#include "../../error.c"
 
 #ifndef LEXER
-#define LEXER 1
+#define LEXER
 
 struct Lexer {
   char *text;
   int counter;
   char current;
+  struct Err *err;
 
   struct Token (*lex)(struct Lexer *);
 
@@ -37,7 +39,13 @@ struct Token Lexer_lex(struct Lexer *lex) {
   if (strchr("0123456789", lex->current) != NULL)
     return lex->num(lex, buff, pos, &len);
 
-  printf("Illegal character '%c'\n", lex->current);
+  strcpy(buff, "Illegal character '");
+  strcat(buff, (char []) { lex->current, '\'', '\0' });
+  strcpy(
+    buff,
+    lex->err->throw(lex->err, buff, pos, len)
+  );
+
   return newToken(ErrTk, buff, pos, len);
 }
 
@@ -75,13 +83,14 @@ char *Lexer_back(struct Lexer *lex) {
   return &lex->current;
 }
 
-struct Lexer newLexer(const char *text) {
+struct Lexer newLexer(const char *text, struct Err *err) {
   struct Lexer res;
 
   res.text = (char*) malloc(255);
   strcpy(res.text, text);
   res.counter = 0;
   res.current = ' ';
+  res.err = err;
   res.next = &Lexer_next;
   res.back = &Lexer_back;
   res.lex = &Lexer_lex;

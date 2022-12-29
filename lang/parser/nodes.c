@@ -2,13 +2,14 @@
 #include "../lexer/tokens.c"
 
 #ifndef PARSER_NODES
-#define PARSER_NODES 1
+#define PARSER_NODES
 
 struct Node {
   /*
     n - NumLit
     b - BinNode
     u - UnaryNode
+    e - Err
   */
   char kind;
 
@@ -16,6 +17,7 @@ struct Node {
   struct Token op;
   struct Node *right;
   struct Token val;
+  char *err;
 
   int pos;
   int len;
@@ -30,6 +32,9 @@ void Node_print(const struct Node *node, char *last_indent) {
   strcat(indent, last_indent);
 
   switch (node->kind) {
+    case 'e':
+      printf("%s\n", node->err);
+      break;
     case 'n':
       node->val.print(&node->val);
       break;
@@ -72,6 +77,7 @@ struct Node *Node_make_ref(const struct Node *node) {
   res->left = node->left;
   res->op = node->op;
   res->val = node->val;
+  res->err = node->err;
 
   return res;
 }
@@ -82,6 +88,7 @@ struct Node newNode(char kind, int pos, int len) {
   res.kind = kind;
   res.pos = pos;
   res.len = len;
+  res.err = malloc(0);
   res.print = &Node_print;
   res.make_ref = &Node_make_ref;
 
@@ -90,13 +97,14 @@ struct Node newNode(char kind, int pos, int len) {
   res.right = malloc(0);
 
   switch (kind) {
+    case 'e':
+      res.err = (char *) malloc(sizeof(char) * 255);
+      break;
     case 'u':
-      res.op = (struct Token) {};
       res.right = (struct Node *) malloc(sizeof(struct Node));
       break;
     case 'b':
       res.left = (struct Node *) malloc(sizeof(struct Node));
-      res.op = (struct Token) {};
       res.right = (struct Node *) malloc(sizeof(struct Node));
       break;
   }

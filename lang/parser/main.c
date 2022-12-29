@@ -5,12 +5,12 @@
 
 
 #ifndef PARSER
-#define PARSER 1
+#define PARSER
 
 struct Parser {
   struct Lexer *lex;
+  struct Err *err;
   struct Token current;
-  int return_type;
 
   struct Node (*parse)(struct Parser *);
 
@@ -30,18 +30,27 @@ struct Token *Parser_next(struct Parser *par) {
   return &par->current;
 }
 
-struct Node Parser_expr(struct Parser *par, int parentPrece) {
-  struct Node left = par->factor(par);
+struct Node Parser_expr(struct Parser *self, int parentPrece) {
+  struct Node left = self->factor(self);
+  if (left.kind == 'e') return left;
 
   while (true) {
-    int prece = par->current.getBinOpPrece(&par->current);
+    int prece = self->current.getBinOpPrece(&self->current);
 
     if (prece == 0 || prece <= parentPrece)
       break;
 
-    struct Token op = par->current;
-    par->next(par);
-    struct Node right = par->expr(par, prece);
+    struct Token op = self->current;
+
+    self->next(self);
+    if (self->current.kind == ErrTk) {
+      struct Node nd = newNode('e', self->current.pos, self->current.len);
+      nd.err = self->current.val;
+      return nd;
+    }
+
+    struct Node right = self->expr(self, prece);
+    if (right.kind == 'e') return newNode('e', 0, 0);
 
     left.left = left.make_ref(&left);
     left.kind = 'b';
@@ -53,29 +62,57 @@ struct Node Parser_expr(struct Parser *par, int parentPrece) {
   return left;
 }
 
-struct Node Parser_factor(struct Parser *par) {
-  if (par->current.kind == NumTk) {
+struct Node Parser_factor(struct Parser *self) {
+  if (self->current.kind == NumTk) {
     struct Node nd = newNode(
       'n',
-      par->current.pos,
-      par->current.len
+      self->current.pos,
+      self->current.len
     );
 
-    nd.val = par->current;
-    par->next(par);
+    nd.val = self->current;
+
+    self->next(self);
+    if (self->current.kind == ErrTk) {
+      nd = newNode('e', self->current.pos, self->current.len);
+      nd.err = self->current.val;
+    }
 
     return nd;
   }
 
-  printf("Parser_factor: %d kind not accepted\n", par->current.kind);
-  abort();
+  if (self->current.kind == ErrTk) {
+    struct Node nd = newNode('e', self->current.pos, self->current.len);
+    nd.err = self->current.val;
+
+    return nd;
+  }
+
+  struct Node nd = newNode('e', self->current.pos, self->current.len);
+
+  strcpy(nd.err, "Parser_factor: ");
+  strcat(nd.err, self->current.str_kind(&self->current));
+  strcat(nd.err, " kind not accepted");
+
+  strcpy(
+    nd.err,
+    self->err->throw(
+      self->err,
+      nd.err,
+      self->current.pos,
+      self->current.len
+    )
+  );
+
+  return nd;
 }
 
 
-struct Parser newParser(struct Lexer *lex) {
+struct Parser newParser(struct Lexer *lex, struct Err *err) {
   struct Parser res;
 
   res.lex = lex;
+  res.err = err;
   res.parse = &Parser_parse;
   res.next = &Parser_next;
   res.expr = &Parser_expr;

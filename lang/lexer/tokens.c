@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #ifndef LEXER_TOKENS
-#define LEXER_TOKENS 1
+#define LEXER_TOKENS
 
 enum TokenKind {
   NumTk = 0,
@@ -24,29 +24,32 @@ struct Token {
   int len;
 
   void (*print)(const struct Token *);
+  char *(*str_kind)(const struct Token *);
   int (*getBinOpPrece)(const struct Token *);
   int (*getUnaryOpPrece)(const struct Token *);
 };
 
-void Token_print(const struct Token *token) {
-  char kind[6];
-
-  switch (token->kind) {
-    case NumTk  : strcpy(kind, "Num"  ); break;
-    case PlusTk : strcpy(kind, "Plus" ); break;
-    case DashTk : strcpy(kind, "Dash" ); break;
-    case StarTk : strcpy(kind, "Star" ); break;
-    case SlashTk: strcpy(kind, "Slash"); break;
-    case ErrTk  : strcpy(kind, "Err"  ); break;
-    case EOFTk  : strcpy(kind, "EOF"  ); break;
+char *Token_str_kind(const struct Token *self) {
+  switch (self->kind) {
+    case NumTk  : return "Num"  ; break;
+    case PlusTk : return "Plus" ; break;
+    case DashTk : return "Dash" ; break;
+    case StarTk : return "Star" ; break;
+    case SlashTk: return "Slash"; break;
+    case ErrTk  : return "Err"  ; break;
+    case EOFTk  : return "EOF"  ; break;
   }
+}
+
+void Token_print(const struct Token *self) {
+  char *kind = self->str_kind(self);
 
   printf(
     "Token:%s { val: '%s', pos: %d, len: %d }\n",
     kind,
-    token->val,
-    token->pos,
-    token->len
+    self->val,
+    self->pos,
+    self->len
   );
 }
 
@@ -85,6 +88,7 @@ struct Token newToken(enum TokenKind kind, char *val, int pos, int len) {
   res.pos = pos;
   res.len = len;
   res.print = &Token_print;
+  res.str_kind = &Token_str_kind;
   res.getUnaryOpPrece = &Token_getUnaryOpPrece;
   res.getBinOpPrece = &Token_getBinOpPrece;
 

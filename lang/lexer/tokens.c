@@ -42,7 +42,7 @@ void Token_print(const struct Token *token) {
   }
 
   printf(
-    "Token:%s { val: '%s', pos: %d, len: %d)\n",
+    "Token:%s { val: '%s', pos: %d, len: %d }\n",
     kind,
     token->val,
     token->pos,

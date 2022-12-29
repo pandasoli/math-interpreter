@@ -3,7 +3,7 @@
 
 
 int main(void) {
-  char* code = "1 + 1";
+  char* code = "1 + 2 * 12";
   run(code);
 
   return 0;

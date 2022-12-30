@@ -16,5 +16,5 @@
     - [x] Negative
   - [x] Postfixed
     - [x] Factorial
-- [ ] Interpreter
+- [x] Interpreter
 

@@ -31,8 +31,29 @@ struct Token *Parser_next(struct Parser *par) {
 }
 
 struct Node Parser_expr(struct Parser *self, int parentPrece) {
-  struct Node left = self->factor(self);
-  if (left.kind == 'e') return left;
+  struct Node left;
+  int unaryOpPrece = self->current.getUnaryOpPrece(&self->current);
+
+  if (unaryOpPrece != 0 && unaryOpPrece >= parentPrece) {
+    struct Token op = self->current;
+    self->next(self);
+
+    struct Node operand = self->expr(self, unaryOpPrece);
+    if (operand.kind == 'e') return left;
+
+    left = newNode(
+      'u',
+      op.pos,
+      (operand.pos + operand.len) - op.pos
+    );
+
+    left.op = op;
+    left.right = operand.make_ref(&operand);
+  }
+  else {
+    left = self->factor(self);
+    if (left.kind == 'e') return left;
+  }
 
   while (true) {
     int prece = self->current.getBinOpPrece(&self->current);
@@ -106,25 +127,27 @@ struct Node Parser_factor(struct Parser *self) {
 
       return node;
     }
+
+    default: {
+      struct Node node = newNode('e', self->current.pos, self->current.len);
+
+      strcpy(node.err, "Parser_factor: ");
+      strcat(node.err, self->current.str_kind(&self->current));
+      strcat(node.err, " kind not accepted");
+
+      strcpy(
+        node.err,
+        self->err->throw(
+          self->err,
+          node.err,
+          self->current.pos,
+          self->current.len
+        )
+      );
+
+      return node;
+    }
   }
-
-  struct Node node = newNode('e', self->current.pos, self->current.len);
-
-  strcpy(node.err, "Parser_factor: ");
-  strcat(node.err, self->current.str_kind(&self->current));
-  strcat(node.err, " kind not accepted");
-
-  strcpy(
-    node.err,
-    self->err->throw(
-      self->err,
-      node.err,
-      self->current.pos,
-      self->current.len
-    )
-  );
-
-  return node;
 }
 
 

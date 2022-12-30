@@ -10,10 +10,10 @@
   - [x] Multiplication
   - [x] Division
 - [x] Parentheses
-- [ ] Unary Operations
-  - [ ] Prefixed
-    - [ ] Positive
-    - [ ] Negative
+- [x] Unary Operations
+  - [x] Prefixed
+    - [x] Positive
+    - [x] Negative
   - [ ] Postfixed
     - [ ] Factorial
 - [ ] Interpreter

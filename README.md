@@ -9,7 +9,7 @@
   - [x] Subtraction
   - [x] Multiplication
   - [x] Division
-- [ ] Parentheses
+- [x] Parentheses
 - [ ] Unary Operations
   - [ ] Prefixed
     - [ ] Positive

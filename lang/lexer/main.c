@@ -30,11 +30,13 @@ struct Token Lexer_lex(struct Lexer *lex) {
   const int pos = lex->counter - 1;
   int len = 1;
 
-  if (lex->current == '+' ) return newToken(PlusTk , buff, pos, len);
-  if (lex->current == '-' ) return newToken(DashTk , buff, pos, len);
-  if (lex->current == '*' ) return newToken(StarTk , buff, pos, len);
-  if (lex->current == '/' ) return newToken(SlashTk, buff, pos, len);
-  if (lex->current == '\0') return newToken(EOFTk  , buff, pos, len);
+  if (lex->current == '+' ) return newToken(PlusTk      , buff, pos, len);
+  if (lex->current == '-' ) return newToken(DashTk      , buff, pos, len);
+  if (lex->current == '*' ) return newToken(StarTk      , buff, pos, len);
+  if (lex->current == '/' ) return newToken(SlashTk     , buff, pos, len);
+  if (lex->current == '(' ) return newToken(OpenParenTk , buff, pos, len);
+  if (lex->current == ')' ) return newToken(CloseParenTk, buff, pos, len);
+  if (lex->current == '\0') return newToken(EOFTk       , buff, pos, len);
 
   if (strchr("0123456789", lex->current) != NULL)
     return lex->num(lex, buff, pos, &len);

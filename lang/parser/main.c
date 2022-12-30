@@ -63,48 +63,68 @@ struct Node Parser_expr(struct Parser *self, int parentPrece) {
 }
 
 struct Node Parser_factor(struct Parser *self) {
-  if (self->current.kind == NumTk) {
-    struct Node nd = newNode(
-      'n',
-      self->current.pos,
-      self->current.len
-    );
+  switch (self->current.kind) {
+    case NumTk: {
+      struct Node node = newNode(
+        'n',
+        self->current.pos,
+        self->current.len
+      );
 
-    nd.val = self->current;
+      node.val = self->current;
 
-    self->next(self);
-    if (self->current.kind == ErrTk) {
-      nd = newNode('e', self->current.pos, self->current.len);
-      nd.err = self->current.val;
+      self->next(self);
+      if (self->current.kind == ErrTk) {
+        node = newNode('e', self->current.pos, self->current.len);
+        node.err = self->current.val;
+      }
+
+      return node;
     }
 
-    return nd;
+    case OpenParenTk: {
+      self->next(self);
+      struct Node expr = self->expr(self, 0);
+      self->current.print(&self->current);
+
+      if (self->current.kind != CloseParenTk) {
+        struct Node node = newNode('e', self->current.pos, self->current.len);
+        strcpy(node.err, "Expected \")\", found \"");
+        strcat(node.err, self->current.val);
+        strcat(node.err, "\"");
+
+        return node;
+      }
+      self->next(self);
+
+      return expr;
+    }
+
+    case ErrTk: {
+      struct Node node = newNode('e', self->current.pos, self->current.len);
+      node.err = self->current.val;
+
+      return node;
+    }
   }
 
-  if (self->current.kind == ErrTk) {
-    struct Node nd = newNode('e', self->current.pos, self->current.len);
-    nd.err = self->current.val;
+  struct Node node = newNode('e', self->current.pos, self->current.len);
 
-    return nd;
-  }
-
-  struct Node nd = newNode('e', self->current.pos, self->current.len);
-
-  strcpy(nd.err, "Parser_factor: ");
-  strcat(nd.err, self->current.str_kind(&self->current));
-  strcat(nd.err, " kind not accepted");
+  strcpy(node.err, "Parser_factor: ");
+  strcat(node.err, self->current.str_kind(&self->current));
+  strcat(node.err, " kind not accepted");
 
   strcpy(
-    nd.err,
+    node.err,
     self->err->throw(
       self->err,
-      nd.err,
+      node.err,
       self->current.pos,
       self->current.len
     )
   );
 
-  return nd;
+  return node;
 }
 
 

@@ -13,8 +13,11 @@ enum TokenKind {
   StarTk = 3,
   SlashTk = 4,
 
-  ErrTk = 5,
-  EOFTk = 6
+  OpenParenTk = 5,
+  CloseParenTk = 6,
+
+  ErrTk = 7,
+  EOFTk = 8
 };
 
 struct Token {
@@ -31,13 +34,18 @@ struct Token {
 
 char *Token_str_kind(const struct Token *self) {
   switch (self->kind) {
-    case NumTk  : return "Num"  ; break;
+    case NumTk: return "Num"; break;
+
     case PlusTk : return "Plus" ; break;
     case DashTk : return "Dash" ; break;
     case StarTk : return "Star" ; break;
     case SlashTk: return "Slash"; break;
-    case ErrTk  : return "Err"  ; break;
-    case EOFTk  : return "EOF"  ; break;
+
+    case OpenParenTk : return "OpenParen" ; break;
+    case CloseParenTk: return "CloseParen"; break;
+
+    case ErrTk: return "Err"; break;
+    case EOFTk: return "EOF"; break;
   }
 }
 

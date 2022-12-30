@@ -34,6 +34,7 @@ struct Token Lexer_lex(struct Lexer *lex) {
   if (lex->current == '-' ) return newToken(DashTk      , buff, pos, len);
   if (lex->current == '*' ) return newToken(StarTk      , buff, pos, len);
   if (lex->current == '/' ) return newToken(SlashTk     , buff, pos, len);
+  if (lex->current == '!' ) return newToken(BangTk      , buff, pos, len);
   if (lex->current == '(' ) return newToken(OpenParenTk , buff, pos, len);
   if (lex->current == ')' ) return newToken(CloseParenTk, buff, pos, len);
   if (lex->current == '\0') return newToken(EOFTk       , buff, pos, len);

@@ -14,7 +14,7 @@
   - [x] Prefixed
     - [x] Positive
     - [x] Negative
-  - [ ] Postfixed
-    - [ ] Factorial
+  - [x] Postfixed
+    - [x] Factorial
 - [ ] Interpreter
 

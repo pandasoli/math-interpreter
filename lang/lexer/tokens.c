@@ -12,12 +12,13 @@ enum TokenKind {
   DashTk = 2,
   StarTk = 3,
   SlashTk = 4,
+  BangTk = 5,
 
-  OpenParenTk = 5,
-  CloseParenTk = 6,
+  OpenParenTk = 6,
+  CloseParenTk = 7,
 
-  ErrTk = 7,
-  EOFTk = 8
+  ErrTk = 8,
+  EOFTk = 9
 };
 
 struct Token {
@@ -29,7 +30,8 @@ struct Token {
   void (*print)(const struct Token *);
   char *(*str_kind)(const struct Token *);
   int (*getBinOpPrece)(const struct Token *);
-  int (*getUnaryOpPrece)(const struct Token *);
+  int (*getPrefixUnaryOpPrece)(const struct Token *);
+  int (*getPostfixUnaryOpPrece)(const struct Token *);
 };
 
 char *Token_str_kind(const struct Token *self) {
@@ -40,6 +42,7 @@ char *Token_str_kind(const struct Token *self) {
     case DashTk : return "Dash" ; break;
     case StarTk : return "Star" ; break;
     case SlashTk: return "Slash"; break;
+    case BangTk : return "Bang" ; break;
 
     case OpenParenTk : return "OpenParen" ; break;
     case CloseParenTk: return "CloseParen"; break;
@@ -61,10 +64,20 @@ void Token_print(const struct Token *self) {
   );
 }
 
-int Token_getUnaryOpPrece(const struct Token *token) {
-  switch (token->kind) {
+int Token_getPrefixUnaryOpPrece(const struct Token *self) {
+  switch (self->kind) {
     case PlusTk:
     case DashTk:
+      return 4;
+
+    default:
+      return 0;
+  }
+}
+
+int Token_getPostfixUnaryOpPrece(const struct Token *self) {
+  switch (self->kind) {
+    case BangTk:
       return 3;
 
     default:
@@ -72,8 +85,8 @@ int Token_getUnaryOpPrece(const struct Token *token) {
   }
 }
 
-int Token_getBinOpPrece(const struct Token *token) {
-  switch (token->kind) {
+int Token_getBinOpPrece(const struct Token *self) {
+  switch (self->kind) {
     case StarTk:
     case SlashTk:
       return 2;
@@ -97,7 +110,8 @@ struct Token newToken(enum TokenKind kind, char *val, int pos, int len) {
   res.len = len;
   res.print = &Token_print;
   res.str_kind = &Token_str_kind;
-  res.getUnaryOpPrece = &Token_getUnaryOpPrece;
+  res.getPrefixUnaryOpPrece = &Token_getPrefixUnaryOpPrece;
+  res.getPostfixUnaryOpPrece = &Token_getPostfixUnaryOpPrece;
   res.getBinOpPrece = &Token_getBinOpPrece;
 
   return res;

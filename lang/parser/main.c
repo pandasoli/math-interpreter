@@ -32,7 +32,7 @@ struct Token *Parser_next(struct Parser *par) {
 
 struct Node Parser_expr(struct Parser *self, int parentPrece) {
   struct Node left;
-  int unaryOpPrece = self->current.getUnaryOpPrece(&self->current);
+  int unaryOpPrece = self->current.getPrefixUnaryOpPrece(&self->current);
 
   if (unaryOpPrece != 0 && unaryOpPrece >= parentPrece) {
     struct Token op = self->current;
@@ -84,9 +84,11 @@ struct Node Parser_expr(struct Parser *self, int parentPrece) {
 }
 
 struct Node Parser_factor(struct Parser *self) {
+  struct Node node;
+
   switch (self->current.kind) {
     case NumTk: {
-      struct Node node = newNode(
+      node = newNode(
         'n',
         self->current.pos,
         self->current.len
@@ -100,12 +102,12 @@ struct Node Parser_factor(struct Parser *self) {
         node.err = self->current.val;
       }
 
-      return node;
+      break;
     }
 
     case OpenParenTk: {
       self->next(self);
-      struct Node expr = self->expr(self, 0);
+      node = self->expr(self, 0);
       self->current.print(&self->current);
 
       if (self->current.kind != CloseParenTk) {
@@ -118,7 +120,7 @@ struct Node Parser_factor(struct Parser *self) {
       }
       self->next(self);
 
-      return expr;
+      break;
     }
 
     case ErrTk: {
@@ -148,6 +150,22 @@ struct Node Parser_factor(struct Parser *self) {
       return node;
     }
   }
+
+  int unaryOpPrece = self->current.getPostfixUnaryOpPrece(&self->current);
+
+  if (unaryOpPrece > 0) {
+    struct Token op = self->current;
+
+    struct Node expr = newNode('u', node.pos, (op.pos + op.len) - node.pos);
+    expr.op = op;
+    expr.right = node.make_ref(&node);
+
+    self->next(self);
+
+    return expr;
+  }
+
+  return node;
 }
 
 

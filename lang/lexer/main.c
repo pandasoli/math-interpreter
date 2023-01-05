@@ -1,25 +1,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "./tokens.c"
-#include "../../error.c"
+#include "./token.h"
+#include "../error.h"
+#include "./main.h"
 
-#ifndef LEXER
-#define LEXER
-
-struct Lexer {
-  char *text;
-  int counter;
-  char current;
-  struct Err *err;
-
-  struct Token (*lex)(struct Lexer *);
-
-  char *(*next)(struct Lexer *);
-  char *(*back)(struct Lexer *);
-
-  struct Token (*num)(struct Lexer *, char *, const int, int *);
-};
 
 struct Token Lexer_lex(struct Lexer *lex) {
   lex->next(lex);
@@ -46,7 +31,7 @@ struct Token Lexer_lex(struct Lexer *lex) {
   strcat(buff, (char []) { lex->current, '\'', '\0' });
   strcpy(
     buff,
-    lex->err->throw(lex->err, buff, pos, len)
+    lex->err->throw_(lex->err, buff, pos, len)
   );
 
   return newToken(ErrTk, buff, pos, len);
@@ -86,7 +71,7 @@ char *Lexer_back(struct Lexer *lex) {
   return &lex->current;
 }
 
-struct Lexer newLexer(const char *text, struct Err *err) {
+struct Lexer newLexer(const char *text, struct Error *err) {
   struct Lexer res;
 
   res.text = (char*) malloc(255);
@@ -101,6 +86,4 @@ struct Lexer newLexer(const char *text, struct Err *err) {
 
   return res;
 }
-
-#endif
 

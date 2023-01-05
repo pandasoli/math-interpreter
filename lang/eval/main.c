@@ -1,21 +1,10 @@
-#include "../lexer/tokens.c"
-#include "../parser/main.c"
-#include "../parser/nodes.c"
-#include "../../error.c"
+#include <stdlib.h>
+#include "../lexer/token.h"
+#include "../parser/main.h"
+#include "../parser/node.h"
+#include "../error.h"
+#include "./main.h"
 
-
-#ifndef EVAL
-#define EVAL
-
-struct Eval_val {
-  /*
-    n - number
-    e - error
-  */
-  char kind;
-  char *err;
-  double val;
-};
 
 struct Eval_val newEval_val(char kind, double val) {
   struct Eval_val res;
@@ -25,19 +14,6 @@ struct Eval_val newEval_val(char kind, double val) {
 
   return res;
 }
-
-struct Eval {
-  struct Parser *par;
-  struct Err *err;
-
-  struct Eval_val (*eval)(struct Eval *);
-
-  struct Eval_val (*visit)(struct Eval *, const struct Node);
-  struct Eval_val (*visit_n)(const struct Node);
-  struct Eval_val (*visit_u)(struct Eval *, const struct Node);
-  struct Eval_val (*visit_b)(struct Eval *, const struct Node);
-};
-
 
 struct Eval_val Eval_eval(struct Eval *self) {
   struct Node ast = self->par->parse(self->par);
@@ -101,7 +77,7 @@ struct Eval_val Eval_visit_b(struct Eval *self, const struct Node node) {
 }
 
 
-struct Eval newEval(struct Parser *par, struct Err *err) {
+struct Eval newEval(struct Parser *par, struct Error *err) {
   struct Eval res;
 
   res.par = par;
@@ -114,6 +90,4 @@ struct Eval newEval(struct Parser *par, struct Err *err) {
 
   return res;
 }
-
-#endif
 

@@ -1,10 +1,12 @@
 #include <stdio.h>
-#include "../lang/lexer/main.c"
-#include "../lang/lexer/tokens.c"
+#include "../lang/lexer/main.h"
+#include "../lang/lexer/token.h"
+#include "../lang/error.h"
 
 
 int main(void) {
-  struct Lexer lex = newLexer("1 + 2 * 12");
+  struct Error err = newError();
+  struct Lexer lex = newLexer("1 + 2 * 12", &err);
   struct Token token = newToken(PlusTk, "+", 0, 1);
 
   do {

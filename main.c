@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include "./lang/main.c"
+#include <stdbool.h>
+#include "./lang/main.h"
 
 
 int main(int argc, char **argv) {
@@ -9,10 +10,10 @@ int main(int argc, char **argv) {
   if (argc > 1) {
     if (strcmp(argv[1], "test")) {
       strcpy(code, "1 + 2 * 12");
-      run(code);
+      MathInterpreter(code, true);
     }
     else
-       printf("What the fuck you meant with \"%s\"?", argv[1]);
+      printf("What the fuck you meant with \"%s\"?", argv[1]);
   }
   else {
     while (true) {
@@ -23,7 +24,7 @@ int main(int argc, char **argv) {
 
       if (strcmp(code, "\n") == 0) break;
 
-      run(code);
+      MathInterpreter(code, true);
     }
   }
 

@@ -1,24 +1,11 @@
 #include <stdio.h>
 #include <stdbool.h>
-#include "../lexer/main.c"
-#include "./nodes.c"
+#include <string.h>
+#include "../lexer/main.h"
+#include "./node.h"
+#include "../error.h"
+#include "./main.h"
 
-
-#ifndef PARSER
-#define PARSER
-
-struct Parser {
-  struct Lexer *lex;
-  struct Err *err;
-  struct Token current;
-
-  struct Node (*parse)(struct Parser *);
-
-  struct Token *(*next)(struct Parser *);
-
-  struct Node (*expr)(struct Parser *, int);
-  struct Node (*factor)(struct Parser *);
-};
 
 struct Node Parser_parse(struct Parser *par) {
   par->next(par);
@@ -71,7 +58,7 @@ struct Node Parser_expr(struct Parser *self, int parentPrece) {
     }
 
     struct Node right = self->expr(self, prece);
-    if (right.kind == 'e') return newNode('e', 0, 0);
+    if (right.kind == 'e') return right;
 
     left.left = left.make_ref(&left);
     left.kind = 'b';
@@ -108,13 +95,22 @@ struct Node Parser_factor(struct Parser *self) {
     case OpenParenTk: {
       self->next(self);
       node = self->expr(self, 0);
-      self->current.print(&self->current);
 
       if (self->current.kind != CloseParenTk) {
         struct Node node = newNode('e', self->current.pos, self->current.len);
         strcpy(node.err, "Expected \")\", found \"");
         strcat(node.err, self->current.val);
         strcat(node.err, "\"");
+
+        strcpy(
+          node.err,
+          self->err->throw_(
+            self->err,
+            node.err,
+            self->current.pos,
+            self->current.len
+          )
+        );
 
         return node;
       }
@@ -133,13 +129,12 @@ struct Node Parser_factor(struct Parser *self) {
     default: {
       struct Node node = newNode('e', self->current.pos, self->current.len);
 
-      strcpy(node.err, "Parser_factor: ");
+      strcpy(node.err, "Parser_factor: expected number or (, found ");
       strcat(node.err, self->current.str_kind(&self->current));
-      strcat(node.err, " kind not accepted");
 
       strcpy(
         node.err,
-        self->err->throw(
+        self->err->throw_(
           self->err,
           node.err,
           self->current.pos,
@@ -169,7 +164,7 @@ struct Node Parser_factor(struct Parser *self) {
 }
 
 
-struct Parser newParser(struct Lexer *lex, struct Err *err) {
+struct Parser newParser(struct Lexer *lex, struct Error *err) {
   struct Parser res;
 
   res.lex = lex;
@@ -181,6 +176,4 @@ struct Parser newParser(struct Lexer *lex, struct Err *err) {
 
   return res;
 }
-
-#endif
 
